@@ -7,11 +7,11 @@ import (
 )
 
 type Adoptee struct {
-	Id string `json:"id"`
-	Name string `json:"name"`
-	Breed string `json:"breed"`
+	ID     int    `json:"id"`
+	Name   string `json:"name"`
+	Breed  string `json:"breed"`
 	Gender string `json:"gender"`
-	Age string `json:"age"`
+	Age    string `json:"age"`
 }
 
 var adoptees []Adoptee
@@ -31,6 +31,7 @@ func getAdopteeHandler(w http.ResponseWriter, r *http.Request) {
 
 func createAdopteeHandler(w http.ResponseWriter, r *http.Request) {
 	adoptee := Adoptee{}
+	autoIncrement := len(adoptees)
 
 	err := r.ParseForm()
 
@@ -40,6 +41,7 @@ func createAdopteeHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	adoptee.ID = autoIncrement + 1
 	adoptee.Name = r.Form.Get("name")
 	adoptee.Breed = r.Form.Get("breed")
 	adoptee.Gender = r.Form.Get("gender")
@@ -50,4 +52,3 @@ func createAdopteeHandler(w http.ResponseWriter, r *http.Request) {
 	http.Redirect(w, r, "/assets/", http.StatusFound)
 
 }
-

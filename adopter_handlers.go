@@ -4,28 +4,27 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
-	"time"
 )
 
 type Adopter struct {
-	FirstName      string    `json:"first_name"`
-	LastName       string    `json:"last_name"`
-	Phone          string    `json:"phone"`
-	Email          string    `json:"email"`
-	Gender         string    `json:"gender"`
-	Birthdate      time.Time `json:"birthdate"`
-	Address        string    `json:"address"`
-	Country        string    `json:"country"`
-	State          string    `json:"state"`
-	City           string    `json:"city"`
-	ZipCode        string    `json:"zip_code"`
-	PetPreferences []string  `json:"pet_preferences"`
+	FirstName      string   `json:"first_name"`
+	LastName       string   `json:"last_name"`
+	Phone          string   `json:"phone"`
+	Email          string   `json:"email"`
+	Gender         string   `json:"gender"`
+	Birthdate      string   `json:"birthdate"`
+	Address        string   `json:"address"`
+	Country        string   `json:"country"`
+	State          string   `json:"state"`
+	City           string   `json:"city"`
+	ZipCode        string   `json:"zip_code"`
+	PetPreferences []string `json:"pet_preferences"`
 }
 
 type PetPreference struct {
 	Breed  string `json:"breed"`
-	Gender string `json:"gender"`
 	Age    string `json:"age"`
+	Gender string `json:"gender"`
 }
 
 var adopters []Adopter
