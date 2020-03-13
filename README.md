@@ -1,6 +1,13 @@
 # animal-rescue
 
-## Run by executing the following in repo dir:
-`go build`
+To run the server on your system:
 
-`./animal-rescue`
+1. Make sure you have [dep](https://github.com/golang/dep) installed
+2. Run `dep ensure` to install dependencies
+3. Run `go build` to create the binary (`animal-rescuce`)
+4. Run the binary : `./animal-rescue`
+
+To run tests:
+
+2. Run `dep ensure` to install dependencies
+2. Run `go test ./...`
