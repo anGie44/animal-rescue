@@ -4,6 +4,9 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"strconv"
+
+	"github.com/gorilla/mux"
 )
 
 type Adoptee struct {
@@ -15,19 +18,6 @@ type Adoptee struct {
 }
 
 var adoptees []Adoptee
-
-func getAdopteeHandler(w http.ResponseWriter, r *http.Request) {
-	adopteeListBytes, err := json.Marshal(adoptees)
-
-	if err != nil {
-		fmt.Println(fmt.Errorf("Error: %v", err))
-		w.WriteHeader(http.StatusInternalServerError)
-		return
-	}
-
-	w.Write(adopteeListBytes)
-
-}
 
 func createAdopteeHandler(w http.ResponseWriter, r *http.Request) {
 	adoptee := Adoptee{}
@@ -51,4 +41,50 @@ func createAdopteeHandler(w http.ResponseWriter, r *http.Request) {
 
 	http.Redirect(w, r, "/assets/", http.StatusFound)
 
+}
+
+func getAdopteeHandler(w http.ResponseWriter, r *http.Request) {
+	var adoptee *Adoptee
+	vars := mux.Vars(r)
+	id, err := strconv.Atoi(vars["id"])
+
+	if err != nil {
+		w.Write([]byte("Adoptee ID not valid"))
+		return
+	}
+
+	for _, a := range adoptees {
+		if a.ID == id {
+			adoptee = &a
+		}
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	if adoptee != nil {
+		payload, _ := json.Marshal(adoptee)
+		w.Write([]byte(payload))
+	} else {
+		w.Write([]byte("Adoptee Not Found"))
+	}
+
+}
+
+func getAdopteesHandler(w http.ResponseWriter, r *http.Request) {
+	adopteeListBytes, err := json.Marshal(adoptees)
+
+	if err != nil {
+		fmt.Println(fmt.Errorf("Error: %v", err))
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+
+	w.Write(adopteeListBytes)
+}
+
+func updateAdopteeHandler(w http.ResponseWriter) {
+	// TODO
+}
+
+func deleteAdopteeHandler(w http.ResponseWriter, r *http.Request) {
+	// TODO
 }

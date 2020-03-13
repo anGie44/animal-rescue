@@ -30,7 +30,7 @@ func TestGetAdopteesHandler(t *testing.T) {
 		t.Fatal(err)
 	}
 	recorder := httptest.NewRecorder()
-	hf := http.HandlerFunc(getAdopteeHandler)
+	hf := http.HandlerFunc(getAdopteesHandler)
 	hf.ServeHTTP(recorder, req)
 
 	if status := recorder.Code; status != http.StatusOK {
