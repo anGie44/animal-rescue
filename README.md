@@ -2,7 +2,7 @@
 
 To run the server on your system:
 
-1. 1. Update the `main.go` file with your Auth0 Credentials. [Sign up](https://auth0.com) for an account for free if you don't have one.
+1. Update the `main.go` file with your Auth0 Credentials. [Sign up](https://auth0.com) for an account for free if you don't have one.
 2. Update the `auth0-variables.js` file in `static/js` with your Auth0 Credentials.
 3. Add `http://localhost:3000` to your Allowed Callback, and Allowed Logout URL's in your [Auth0 Management Dashboard](https://manage.auth0.com)
 4. Make sure you have [dep](https://github.com/golang/dep) installed
