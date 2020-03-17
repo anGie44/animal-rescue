@@ -19,7 +19,7 @@ type Adoptee struct {
 
 var adoptees []Adoptee
 
-func createAdopteeHandler(w http.ResponseWriter, r *http.Request) {
+var createAdopteeHandler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 	adoptee := Adoptee{}
 	autoIncrement := len(adoptees)
 
@@ -41,9 +41,9 @@ func createAdopteeHandler(w http.ResponseWriter, r *http.Request) {
 
 	http.Redirect(w, r, "/assets/", http.StatusFound)
 
-}
+})
 
-func getAdopteeHandler(w http.ResponseWriter, r *http.Request) {
+var getAdopteeHandler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 	var adoptee *Adoptee
 	vars := mux.Vars(r)
 	id, err := strconv.Atoi(vars["id"])
@@ -67,9 +67,9 @@ func getAdopteeHandler(w http.ResponseWriter, r *http.Request) {
 		w.Write([]byte("Adoptee Not Found"))
 	}
 
-}
+})
 
-func getAdopteesHandler(w http.ResponseWriter, r *http.Request) {
+var getAdopteesHandler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 	adopteeListBytes, err := json.Marshal(adoptees)
 
 	if err != nil {
@@ -79,12 +79,12 @@ func getAdopteesHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.Write(adopteeListBytes)
-}
+})
 
-func updateAdopteeHandler(w http.ResponseWriter) {
+var updateAdopteeHandler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 	// TODO
-}
+})
 
-func deleteAdopteeHandler(w http.ResponseWriter, r *http.Request) {
+var deleteAdopteeHandler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 	// TODO
-}
+})

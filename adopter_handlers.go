@@ -33,8 +33,9 @@ type PetPreference struct {
 
 var adopters []Adopter
 
-func createAdopterHandler(w http.ResponseWriter, r *http.Request) {
+var createAdopterHandler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 	adopter := Adopter{}
+	petPreferences := []PetPreference{}
 	autoIncrement := len(adopters) + 1
 
 	err := r.ParseForm()
@@ -48,15 +49,31 @@ func createAdopterHandler(w http.ResponseWriter, r *http.Request) {
 	adopter.ID = autoIncrement
 	adopter.FirstName = r.Form.Get("first_name")
 	adopter.LastName = r.Form.Get("last_name")
+	adopter.Phone = r.Form.Get("phone")
+	adopter.Email = r.Form.Get("email")
+	adopter.Gender = r.Form.Get("gender")
+	adopter.Birthdate = r.Form.Get("birthdate")
+	adopter.Address = r.Form.Get("address")
+	adopter.Country = r.Form.Get("country")
+	adopter.State = r.Form.Get("state")
+	adopter.City = r.Form.Get("city")
+	adopter.ZipCode = r.Form.Get("zip_code")
+	petPreferenceA := PetPreference{r.Form.Get("pet_preference_a_breed"), r.Form.Get("pet_preference_a_age"), r.Form.Get("pet_preference_a_gender")}
+	petPreferenceB := PetPreference{r.Form.Get("pet_preference_b_breed"), r.Form.Get("pet_preference_b_age"), r.Form.Get("pet_preference_b_gender")}
+	petPreferenceC := PetPreference{r.Form.Get("pet_preference_c_breed"), r.Form.Get("pet_preference_c_age"), r.Form.Get("pet_preference_c_gender")}
+	petPreferences = append(petPreferences, petPreferenceA)
+	petPreferences = append(petPreferences, petPreferenceB)
+	petPreferences = append(petPreferences, petPreferenceC)
+	adopter.PetPreferences = petPreferences
 
 	adopters = append(adopters, adopter)
 
 	// redirect user to original HTML page
 	http.Redirect(w, r, "/assets/", http.StatusFound)
 
-}
+})
 
-func getAdopterHandler(w http.ResponseWriter, r *http.Request) {
+var getAdopterHandler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 	var adopter *Adopter
 	vars := mux.Vars(r)
 	id, err := strconv.Atoi(vars["id"])
@@ -80,9 +97,9 @@ func getAdopterHandler(w http.ResponseWriter, r *http.Request) {
 		w.Write([]byte("Adopter Not Found"))
 	}
 
-}
+})
 
-func getAdoptersHandler(w http.ResponseWriter, r *http.Request) {
+var getAdoptersHandler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 	adopterListBytes, err := json.Marshal(adopters)
 	if err != nil {
 		fmt.Println(fmt.Errorf("Error: %v", err))
@@ -90,12 +107,12 @@ func getAdoptersHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	w.Write(adopterListBytes)
-}
+})
 
-func updateAdopterHandler(w http.ResponseWriter, r *http.Request) {
+var updateAdopterHandler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 	// TODO
-}
+})
 
-func deleteAdopterHandler(w http.ResponseWriter, r *http.Request) {
+var deleteAdopterHandler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 	// TODO
-}
+})
