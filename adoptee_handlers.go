@@ -77,7 +77,6 @@ var getAdopteesHandler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Re
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
-
 	w.Write(adopteeListBytes)
 })
 

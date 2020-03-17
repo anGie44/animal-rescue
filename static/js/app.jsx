@@ -1,41 +1,13 @@
 var App = React.createClass({
     componentWillMount: function() {
-      this.setupAjax();
-      this.parseHash();
       this.setState();
-    },
-    setupAjax: function() {
-      $.ajaxSetup({
-        'beforeSend': function(xhr) {
-          if (localStorage.getItem('access_token')) {
-            xhr.setRequestHeader('Authorization',
-                  'Bearer ' + localStorage.getItem('access_token'));
-          }
-        }
-      });
-    },
-    parseHash: function(){
-      this.auth0 = new auth0.WebAuth({
-        domain:       AUTH0_DOMAIN,
-        clientID:     AUTH0_CLIENT_ID
-      });
-      this.auth0.parseHash(window.location.hash, function(err, authResult) {
-        if (err) {
-          return console.log(err);
-        }
-        if(authResult !== null && authResult.accessToken !== null && authResult.idToken !== null){
-          localStorage.setItem('access_token', authResult.accessToken);
-          localStorage.setItem('id_token', authResult.idToken);
-          localStorage.setItem('profile', JSON.stringify(authResult.idTokenPayload));
-          window.location = window.location.href.substr(0, window.location.href.indexOf('#'))
-        }
-      });
     },
     setState: function(){
       var idToken = localStorage.getItem('id_token');
       if(idToken){
         this.loggedIn = true;
       } else {
+        localStorage.setItem('id_token', 'bearer secret1')
         this.loggedIn = false;
       }
     },
@@ -51,15 +23,8 @@ var App = React.createClass({
   
   var Home = React.createClass({
     authenticate: function(){
-      this.webAuth = new auth0.WebAuth({
-        domain:       AUTH0_DOMAIN,
-        clientID:     AUTH0_CLIENT_ID,
-        scope:        'openid profile',
-        audience:     AUTH0_API_AUDIENCE,
-        responseType: 'token id_token',
-        redirectUri : AUTH0_CALLBACK_URL
-      });
-      this.webAuth.authorize();
+      this.loggedIn = true;
+      return <Redirect to='${AUTH0_CALLBACK_URL}'/>;
     },
     render: function() {
       return (
@@ -84,18 +49,18 @@ var App = React.createClass({
     getInitialState: function() {
       return {
         adopters: [],
-        adoptees: [],
+        adoptees: []
       }
     },
     componentDidMount: function() {
       this.serverRequest = $.get('http://localhost:3000/adopters', function (result) {
         this.setState({
-          adopters: result,
+          adopters: result == "null" ? [] : result,
         });
       }.bind(this));
       this.serverRequest = $.get('http://localhost:3000/adoptees', function (result) {
         this.setState({
-          adoptees: result,
+          adoptees: result == "null" ? [] : result,
         });
       }.bind(this));
 
@@ -115,12 +80,44 @@ var App = React.createClass({
   
           </div>
           <div className="row">
-            
             {this.state.adoptees.map(function(adoptee, i){
               return <Adoptee key={i} adoptee={adoptee} />
             })}
     
             </div>
+          <div className="adopter_form">
+            <form action="/adopters" method="post">
+              <b>Adopter's Personal Information</b>
+              <br/><br/>FIRST NAME
+              &nbsp;<input type="text" name="first_name"></input>
+              <br/>LAST NAME
+              &nbsp;<input type="text" name="last_name"></input>              
+              <br/>PHONE
+              &nbsp;<input type="text" name="phone"></input>
+              <br/>EMAIL
+              &nbsp;<input type="text" name="email"></input>
+              <br/>GENDER
+              &nbsp;<select id="gender" name="gender">
+                <option value="female">Female</option>
+                <option value="male">Male</option>
+                <option value="other">Other</option>
+                </select>
+              <br/>BIRTHDATE
+              &nbsp;<input type="date" name="birthdate"></input>
+              <br/>ADDRESS
+              &nbsp;<input type="text" name="address"></input>
+              <br/>COUNTRY
+              &nbsp;<input type="text" name="country"></input>
+              <br/>STATE
+              &nbsp;<input type="text" name="state"></input>
+              <br/>CITY
+              &nbsp;<input type="text" name="city"></input>
+              <br/>ZIPCODE
+              &nbsp;<input type="text" name="zipcode"></input>
+              <br/>
+              &nbsp;<input type="submit" name="Submit"></input>
+            </form>
+          </div>
         </div>);
     }
   });

@@ -57,7 +57,7 @@ var createAdopterHandler = http.HandlerFunc(func(w http.ResponseWriter, r *http.
 	adopter.Country = r.Form.Get("country")
 	adopter.State = r.Form.Get("state")
 	adopter.City = r.Form.Get("city")
-	adopter.ZipCode = r.Form.Get("zip_code")
+	adopter.ZipCode = r.Form.Get("zipcode")
 	petPreferenceA := PetPreference{r.Form.Get("pet_preference_a_breed"), r.Form.Get("pet_preference_a_age"), r.Form.Get("pet_preference_a_gender")}
 	petPreferenceB := PetPreference{r.Form.Get("pet_preference_b_breed"), r.Form.Get("pet_preference_b_age"), r.Form.Get("pet_preference_b_gender")}
 	petPreferenceC := PetPreference{r.Form.Get("pet_preference_c_breed"), r.Form.Get("pet_preference_c_age"), r.Form.Get("pet_preference_c_gender")}
@@ -69,12 +69,14 @@ var createAdopterHandler = http.HandlerFunc(func(w http.ResponseWriter, r *http.
 	adopters = append(adopters, adopter)
 
 	// redirect user to original HTML page
-	http.Redirect(w, r, "/assets/", http.StatusFound)
+	// http.Redirect(w, r, "/", http.StatusFound)
+	payload, _ := json.Marshal(adopters)
+	w.Write([]byte(payload))
 
 })
 
 var getAdopterHandler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-	var adopter *Adopter
+	var adopter Adopter
 	vars := mux.Vars(r)
 	id, err := strconv.Atoi(vars["id"])
 
@@ -85,12 +87,13 @@ var getAdopterHandler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Req
 
 	for _, a := range adopters {
 		if a.ID == id {
-			adopter = &a
+			fmt.Println(a.ID, id)
+			adopter = a
 		}
 	}
 
 	w.Header().Set("Content-Type", "application/json")
-	if adopter != nil {
+	if &adopter != nil {
 		payload, _ := json.Marshal(adopter)
 		w.Write([]byte(payload))
 	} else {
