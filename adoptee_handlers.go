@@ -40,8 +40,8 @@ var createAdopteeHandler = http.HandlerFunc(func(w http.ResponseWriter, r *http.
 	adoptee.Age = r.Form.Get("age")
 
 	adoptees = append(adoptees, &adoptee)
-
-	http.Redirect(w, r, "/assets/", http.StatusFound)
+	payload, _ := json.Marshal(adoptees)
+	w.Write([]byte(payload))
 
 })
 

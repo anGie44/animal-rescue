@@ -33,6 +33,10 @@ func main() {
 	r.Handle("/petpref/{id}/update", updatePetPrefenceHandler).Methods("GET")
 	r.Handle("/petpref/{id}/delete", deletePetPreferenceHandler).Methods("GET")
 
+	r.Handle("/adoption/adopter/{adopter_id}/adoptee/{adoptee_id}", createAdoptionHandler).Methods("GET")
+	r.Handle("/adoptions", getAdoptionsHandler).Methods("GET")
+	r.Handle("/adoption/{id}", getAdoptionHandler).Methods("GET")
+
 	http.ListenAndServe(":3000", handlers.LoggingHandler(os.Stdout, r))
 
 }
