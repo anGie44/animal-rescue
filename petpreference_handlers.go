@@ -77,7 +77,7 @@ var updatePetPrefenceHandler = http.HandlerFunc(func(w http.ResponseWriter, r *h
 })
 
 var deletePetPreferenceHandler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-	// GET adopter and remove from list stored in memory
+	// GET PetPreference and remove from list stored in memory
 	vars := mux.Vars(r)
 	id, err := strconv.Atoi(vars["id"])
 
