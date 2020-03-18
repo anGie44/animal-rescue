@@ -4,7 +4,9 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"reflect"
 	"strconv"
+	"strings"
 
 	"github.com/gorilla/mux"
 )
@@ -17,7 +19,7 @@ type Adoptee struct {
 	Age    string `json:"age"`
 }
 
-var adoptees []Adoptee
+var adoptees []*Adoptee
 
 var createAdopteeHandler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 	adoptee := Adoptee{}
@@ -37,14 +39,13 @@ var createAdopteeHandler = http.HandlerFunc(func(w http.ResponseWriter, r *http.
 	adoptee.Gender = r.Form.Get("gender")
 	adoptee.Age = r.Form.Get("age")
 
-	adoptees = append(adoptees, adoptee)
+	adoptees = append(adoptees, &adoptee)
 
 	http.Redirect(w, r, "/assets/", http.StatusFound)
 
 })
 
 var getAdopteeHandler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-	var adoptee *Adoptee
 	vars := mux.Vars(r)
 	id, err := strconv.Atoi(vars["id"])
 
@@ -53,13 +54,9 @@ var getAdopteeHandler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Req
 		return
 	}
 
-	for _, a := range adoptees {
-		if a.ID == id {
-			adoptee = &a
-		}
-	}
-
 	w.Header().Set("Content-Type", "application/json")
+
+	adoptee, _ := getAdopteeByID(id)
 	if adoptee != nil {
 		payload, _ := json.Marshal(adoptee)
 		w.Write([]byte(payload))
@@ -81,9 +78,68 @@ var getAdopteesHandler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Re
 })
 
 var updateAdopteeHandler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-	// TODO
+	// GET adoptee and update fields
+	vars := mux.Vars(r)
+	id, err := strconv.Atoi(vars["id"])
+
+	if err != nil {
+		w.Write([]byte("Adoptee ID not valid"))
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+
+	adoptee, _ := getAdopteeByID(id)
+	if adoptee != nil {
+		requestQuery := r.URL.Query()
+		for key := range requestQuery {
+			newKey := strings.Title(key)
+			value := requestQuery.Get(key)
+			reflect.ValueOf(adoptee).Elem().FieldByName(newKey).SetString(value)
+		}
+		payload, _ := json.Marshal(adoptee)
+		w.Write([]byte(payload))
+	} else {
+		w.Write([]byte("Adoptee Not Found"))
+	}
+
 })
 
 var deleteAdopteeHandler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-	// TODO
+	// GET adoptee and remove from list stored in memory
+	vars := mux.Vars(r)
+	id, err := strconv.Atoi(vars["id"])
+
+	if err != nil {
+		w.Write([]byte("Adoptee ID not valid"))
+		return
+	}
+
+	adoptee, index := getAdopteeByID(id)
+	if adoptee != nil {
+		removeAdopteeByID(index)
+		w.Write([]byte("Adoptee with ID " + string(index) + " removed"))
+	} else {
+		w.Write([]byte("Adoptee Not Found"))
+	}
+
 })
+
+func getAdopteeByID(id int) (*Adoptee, int) {
+	var adoptee *Adoptee
+	var index int
+	for i, a := range adoptees {
+		if a.ID == id {
+			adoptee = a
+			index = i
+		}
+	}
+	return adoptee, index
+}
+
+func removeAdopteeByID(index int) {
+	var emptyAdoptee *Adoptee
+	adoptees[index] = adoptees[len(adoptees)-1]
+	adoptees[len(adoptees)-1] = emptyAdoptee
+	adoptees = adoptees[:len(adoptees)-1]
+}

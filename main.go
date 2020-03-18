@@ -19,12 +19,18 @@ func main() {
 	// /adopters - will retrieve list of current/to-be pet adopters
 	// /adoptees - will retrieve list of current animals up for adoptions
 	r.Handle("/status", statusHandler).Methods("GET")
-	r.Handle("/adopters", createAdopterHandler).Methods("POST")
+
+	r.Handle("/adopter", createAdopterHandler).Methods("POST")
 	r.Handle("/adopters", getAdoptersHandler).Methods("GET")
-	r.Handle("/adopters/{id}", getAdopterHandler).Methods("GET")
-	r.Handle("/adoptees", createAdopteeHandler).Methods("POST")
+	r.Handle("/adopter/{id}", getAdopterHandler).Methods("GET")
+	r.Handle("/adopter/{id}/update", updateAdopterHandler).Methods("GET")
+	r.Handle("/adopter/{id}/delete", deleteAdopterHandler).Methods("GET")
+
+	r.Handle("/adoptee", createAdopteeHandler).Methods("POST")
 	r.Handle("/adoptees", getAdopteesHandler).Methods("GET")
-	r.Handle("/adoptees/{id}", getAdopteeHandler).Methods("GET")
+	r.Handle("/adoptee/{id}", getAdopteeHandler).Methods("GET")
+	r.Handle("/adoptee/{id}/update", updateAdopteeHandler).Methods("GET")
+	r.Handle("/adoptees/{id}/delete", deleteAdopteeHandler).Methods("GET")
 
 	http.ListenAndServe(":3000", handlers.LoggingHandler(os.Stdout, r))
 

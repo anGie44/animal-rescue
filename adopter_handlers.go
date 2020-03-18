@@ -4,7 +4,9 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"reflect"
 	"strconv"
+	"strings"
 
 	"github.com/gorilla/mux"
 )
@@ -31,7 +33,7 @@ type PetPreference struct {
 	Gender string `json:"gender"`
 }
 
-var adopters []Adopter
+var adopters []*Adopter
 
 var createAdopterHandler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 	adopter := Adopter{}
@@ -66,7 +68,7 @@ var createAdopterHandler = http.HandlerFunc(func(w http.ResponseWriter, r *http.
 	petPreferences = append(petPreferences, petPreferenceC)
 	adopter.PetPreferences = petPreferences
 
-	adopters = append(adopters, adopter)
+	adopters = append(adopters, &adopter)
 
 	// redirect user to original HTML page
 	// http.Redirect(w, r, "/", http.StatusFound)
@@ -76,7 +78,6 @@ var createAdopterHandler = http.HandlerFunc(func(w http.ResponseWriter, r *http.
 })
 
 var getAdopterHandler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-	var adopter Adopter
 	vars := mux.Vars(r)
 	id, err := strconv.Atoi(vars["id"])
 
@@ -85,15 +86,9 @@ var getAdopterHandler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Req
 		return
 	}
 
-	for _, a := range adopters {
-		if a.ID == id {
-			fmt.Println(a.ID, id)
-			adopter = a
-		}
-	}
-
 	w.Header().Set("Content-Type", "application/json")
-	if &adopter != nil {
+	adopter, _ := getAdopterByID(id)
+	if adopter != nil {
 		payload, _ := json.Marshal(adopter)
 		w.Write([]byte(payload))
 	} else {
@@ -113,9 +108,80 @@ var getAdoptersHandler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Re
 })
 
 var updateAdopterHandler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-	// TODO
+	// GET adopter and update fields
+	vars := mux.Vars(r)
+	id, err := strconv.Atoi(vars["id"])
+
+	if err != nil {
+		w.Write([]byte("Adopter ID not valid"))
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+
+	adopter, _ := getAdopterByID(id)
+	if adopter != nil {
+		requestQuery := r.URL.Query()
+		for key := range requestQuery {
+			newKey := formatKey(key)
+			value := requestQuery.Get(key)
+			reflect.ValueOf(adopter).Elem().FieldByName(newKey).SetString(value)
+		}
+		payload, _ := json.Marshal(adopter)
+		w.Write([]byte(payload))
+	} else {
+		w.Write([]byte("Adopter Not Found"))
+	}
+
 })
 
 var deleteAdopterHandler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-	// TODO
+	// GET adopter and remove from list stored in memory
+	vars := mux.Vars(r)
+	id, err := strconv.Atoi(vars["id"])
+
+	if err != nil {
+		w.Write([]byte("Adopter ID not valid"))
+		return
+	}
+
+	adopter, index := getAdopterByID(id)
+	if adopter != nil {
+		removeAdopterByID(index)
+		w.Write([]byte("Adopter with ID " + string(index) + " removed"))
+	} else {
+		w.Write([]byte("Adopter Not Found"))
+	}
 })
+
+func getAdopterByID(id int) (*Adopter, int) {
+	var adopter *Adopter
+	var index int
+	for i, a := range adopters {
+		if a.ID == id {
+			adopter = a
+			index = i
+		}
+	}
+	return adopter, index
+}
+
+func removeAdopterByID(index int) {
+	var emptyAdopter *Adopter
+	adopters[index] = adopters[len(adopters)-1]
+	adopters[len(adopters)-1] = emptyAdopter
+	adopters = adopters[:len(adopters)-1]
+}
+
+func formatKey(key string) string {
+	var str string
+	if strings.Contains(key, "_") {
+		str = strings.Replace(key, "_", " ", -1)
+		str = strings.Title(str)
+		str = strings.Replace(str, " ", "", -1)
+
+	} else {
+		str = strings.Title(key)
+	}
+	return str
+}
