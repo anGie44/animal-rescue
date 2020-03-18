@@ -125,6 +125,8 @@ var deleteAdopteeHandler = http.HandlerFunc(func(w http.ResponseWriter, r *http.
 
 })
 
+// Helper Functions
+
 func getAdopteeByID(id int) (*Adoptee, int) {
 	var adoptee *Adoptee
 	var index int

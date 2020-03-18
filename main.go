@@ -14,10 +14,6 @@ func main() {
 	r.PathPrefix("/static/").Handler(http.StripPrefix("/static/", http.FileServer(http.Dir("./static/"))))
 
 	// Defining the API
-	// Routes with token verification include:
-	// /status
-	// /adopters - will retrieve list of current/to-be pet adopters
-	// /adoptees - will retrieve list of current animals up for adoptions
 	r.Handle("/status", statusHandler).Methods("GET")
 
 	r.Handle("/adopter", createAdopterHandler).Methods("POST")
@@ -26,11 +22,16 @@ func main() {
 	r.Handle("/adopter/{id}/update", updateAdopterHandler).Methods("GET")
 	r.Handle("/adopter/{id}/delete", deleteAdopterHandler).Methods("GET")
 
-	r.Handle("/adoptee", createAdopteeHandler).Methods("POST")
+	r.Handle("/adoptee", createAdopteeHandler).Methods("GET")
 	r.Handle("/adoptees", getAdopteesHandler).Methods("GET")
 	r.Handle("/adoptee/{id}", getAdopteeHandler).Methods("GET")
 	r.Handle("/adoptee/{id}/update", updateAdopteeHandler).Methods("GET")
 	r.Handle("/adoptees/{id}/delete", deleteAdopteeHandler).Methods("GET")
+
+	r.Handle("/petpref", createPetPreferenceHandler).Methods("GET")
+	r.Handle("/petprefs", getPetPreferencesHandler).Methods("GET")
+	r.Handle("/petpref/{id}/update", updatePetPrefenceHandler).Methods("GET")
+	r.Handle("/petpref/{id}/delete", deletePetPreferenceHandler).Methods("GET")
 
 	http.ListenAndServe(":3000", handlers.LoggingHandler(os.Stdout, r))
 

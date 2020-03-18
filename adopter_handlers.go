@@ -27,18 +27,13 @@ type Adopter struct {
 	PetPreferences []PetPreference `json:"pet_preferences"`
 }
 
-type PetPreference struct {
-	Breed  string `json:"breed"`
-	Age    string `json:"age"`
-	Gender string `json:"gender"`
-}
-
 var adopters []*Adopter
 
 var createAdopterHandler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 	adopter := Adopter{}
-	petPreferences := []PetPreference{}
-	autoIncrement := len(adopters) + 1
+	adopterPetPreferences := []PetPreference{}
+	adopterAutoIncrement := len(adopters) + 1
+	petPrefAutoIncrement := len(petPrefs) + 1
 
 	err := r.ParseForm()
 
@@ -48,7 +43,7 @@ var createAdopterHandler = http.HandlerFunc(func(w http.ResponseWriter, r *http.
 		return
 	}
 
-	adopter.ID = autoIncrement
+	adopter.ID = adopterAutoIncrement
 	adopter.FirstName = r.Form.Get("first_name")
 	adopter.LastName = r.Form.Get("last_name")
 	adopter.Phone = r.Form.Get("phone")
@@ -60,13 +55,34 @@ var createAdopterHandler = http.HandlerFunc(func(w http.ResponseWriter, r *http.
 	adopter.State = r.Form.Get("state")
 	adopter.City = r.Form.Get("city")
 	adopter.ZipCode = r.Form.Get("zipcode")
-	petPreferenceA := PetPreference{r.Form.Get("pet_preference_a_breed"), r.Form.Get("pet_preference_a_age"), r.Form.Get("pet_preference_a_gender")}
-	petPreferenceB := PetPreference{r.Form.Get("pet_preference_b_breed"), r.Form.Get("pet_preference_b_age"), r.Form.Get("pet_preference_b_gender")}
-	petPreferenceC := PetPreference{r.Form.Get("pet_preference_c_breed"), r.Form.Get("pet_preference_c_age"), r.Form.Get("pet_preference_c_gender")}
-	petPreferences = append(petPreferences, petPreferenceA)
-	petPreferences = append(petPreferences, petPreferenceB)
-	petPreferences = append(petPreferences, petPreferenceC)
-	adopter.PetPreferences = petPreferences
+	petPreferenceA := PetPreference{
+		petPrefAutoIncrement,
+		r.Form.Get("pet_preference_a_breed"),
+		r.Form.Get("pet_preference_a_age"),
+		r.Form.Get("pet_preference_a_gender"),
+	}
+	petPrefAutoIncrement++
+	petPreferenceB := PetPreference{
+		petPrefAutoIncrement,
+		r.Form.Get("pet_preference_b_breed"),
+		r.Form.Get("pet_preference_b_age"),
+		r.Form.Get("pet_preference_b_gender"),
+	}
+	petPrefAutoIncrement++
+	petPreferenceC := PetPreference{
+		petPrefAutoIncrement,
+		r.Form.Get("pet_preference_c_breed"),
+		r.Form.Get("pet_preference_c_age"),
+		r.Form.Get("pet_preference_c_gender"),
+	}
+	petPrefAutoIncrement++
+	adopterPetPreferences = append(adopterPetPreferences, petPreferenceA)
+	adopterPetPreferences = append(adopterPetPreferences, petPreferenceB)
+	adopterPetPreferences = append(adopterPetPreferences, petPreferenceC)
+	adopter.PetPreferences = adopterPetPreferences
+	for _, pref := range adopterPetPreferences {
+		petPrefs = append(petPrefs, &pref)
+	}
 
 	adopters = append(adopters, &adopter)
 
@@ -153,6 +169,8 @@ var deleteAdopterHandler = http.HandlerFunc(func(w http.ResponseWriter, r *http.
 		w.Write([]byte("Adopter Not Found"))
 	}
 })
+
+// Helper Functions
 
 func getAdopterByID(id int) (*Adopter, int) {
 	var adopter *Adopter
