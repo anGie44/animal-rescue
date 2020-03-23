@@ -17,11 +17,12 @@ type PetPreference struct {
 	Gender string `json:"gender"`
 }
 
-var petPrefs []*PetPreference
+var petPreferences []*PetPreference
+var petPreferenceSeq = intSeq()
 
 var createPetPreferenceHandler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 	petPreference := PetPreference{}
-	petPreference.ID = len(petPrefs) + 1
+	petPreference.ID = petPreferenceSeq()
 	requestQuery := r.URL.Query()
 
 	for key := range requestQuery {
@@ -35,13 +36,13 @@ var createPetPreferenceHandler = http.HandlerFunc(func(w http.ResponseWriter, r 
 			petPreference.Gender = value
 		}
 	}
-	petPrefs = append(petPrefs, &petPreference)
+	petPreferences = append(petPreferences, &petPreference)
 	payload, _ := json.Marshal(petPreference)
 	w.Write([]byte(payload))
 })
 
 var getPetPreferencesHandler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-	petPrefsListBytes, err := json.Marshal(petPrefs)
+	petPrefsListBytes, err := json.Marshal(petPreferences)
 	if err != nil {
 		fmt.Println(fmt.Errorf("Error: %v", err))
 		w.WriteHeader(http.StatusInternalServerError)
@@ -94,24 +95,3 @@ var deletePetPreferenceHandler = http.HandlerFunc(func(w http.ResponseWriter, r 
 		w.Write([]byte("Pet Preference Not Found"))
 	}
 })
-
-// Helper Functions
-
-func getPetPreferenceByID(id int) (*PetPreference, int) {
-	var petPreference *PetPreference
-	var index int
-	for i, p := range petPrefs {
-		if p.ID == id {
-			petPreference = p
-			index = i
-		}
-	}
-	return petPreference, index
-}
-
-func removePetPreferenceByID(index int) {
-	var emptyPetPreference *PetPreference
-	petPrefs[index] = petPrefs[len(petPrefs)-1]
-	petPrefs[len(petPrefs)-1] = emptyPetPreference
-	petPrefs = petPrefs[:len(petPrefs)-1]
-}

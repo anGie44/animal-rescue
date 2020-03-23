@@ -17,6 +17,7 @@ type Adoption struct {
 }
 
 var adoptions []*Adoption
+var adoptionSeq = intSeq()
 
 var createAdoptionHandler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
@@ -40,7 +41,7 @@ var createAdoptionHandler = http.HandlerFunc(func(w http.ResponseWriter, r *http
 		return
 	}
 	adoption := Adoption{}
-	adoption.ID = len(adoptions) + 1
+	adoption.ID = adoptionSeq()
 	adoption.Adopter = adopter
 	adoption.Adoptee = adoptee
 	adoptions = append(adoptions, &adoption)
@@ -98,24 +99,3 @@ var deleteAdoptionHandler = http.HandlerFunc(func(w http.ResponseWriter, r *http
 		w.Write([]byte("Adoption Not Found"))
 	}
 })
-
-// Helper Functions
-
-func getAdoptionByID(id int) (*Adoption, int) {
-	var adoption *Adoption
-	var index int
-	for i, a := range adoptions {
-		if a.ID == id {
-			adoption = a
-			index = i
-		}
-	}
-	return adoption, index
-}
-
-func removeAdoptionByID(index int) {
-	var emptyAdoption *Adoption
-	adoptions[index] = adoptions[len(adoptions)-1]
-	adoptions[len(adoptions)-1] = emptyAdoption
-	adoptions = adoptions[:len(adoptions)-1]
-}

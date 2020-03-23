@@ -19,23 +19,24 @@ func main() {
 	r.Handle("/adopter", createAdopterHandler).Methods("POST")
 	r.Handle("/adopters", getAdoptersHandler).Methods("GET")
 	r.Handle("/adopter/{id}", getAdopterHandler).Methods("GET")
-	r.Handle("/adopter/{id}/update", updateAdopterHandler).Methods("GET")
-	r.Handle("/adopter/{id}/delete", deleteAdopterHandler).Methods("GET")
+	r.Handle("/adopter/{id}", updateAdopterHandler).Methods("PATCH")
+	r.Handle("/adopter/{id}", deleteAdopterHandler).Methods("DELETE")
 
-	r.Handle("/adoptee", createAdopteeHandler).Methods("GET")
+	r.Handle("/adoptee", createAdopteeHandler).Methods("POST")
 	r.Handle("/adoptees", getAdopteesHandler).Methods("GET")
 	r.Handle("/adoptee/{id}", getAdopteeHandler).Methods("GET")
-	r.Handle("/adoptee/{id}/update", updateAdopteeHandler).Methods("GET")
-	r.Handle("/adoptees/{id}/delete", deleteAdopteeHandler).Methods("GET")
+	r.Handle("/adoptee/{id}/update", updateAdopteeHandler).Methods("PATCH")
+	r.Handle("/adoptees/{id}/delete", deleteAdopteeHandler).Methods("DELETE")
 
-	r.Handle("/petpref", createPetPreferenceHandler).Methods("GET")
+	r.Handle("/petpref", createPetPreferenceHandler).Methods("POST")
 	r.Handle("/petprefs", getPetPreferencesHandler).Methods("GET")
-	r.Handle("/petpref/{id}/update", updatePetPrefenceHandler).Methods("GET")
-	r.Handle("/petpref/{id}/delete", deletePetPreferenceHandler).Methods("GET")
+	r.Handle("/petpref/{id}/update", updatePetPrefenceHandler).Methods("PATCH")
+	r.Handle("/petpref/{id}", deletePetPreferenceHandler).Methods("DELETE")
 
-	r.Handle("/adoption/adopter/{adopter_id}/adoptee/{adoptee_id}", createAdoptionHandler).Methods("GET")
+	r.Handle("/adoption", createAdoptionHandler).Methods("POST")
 	r.Handle("/adoptions", getAdoptionsHandler).Methods("GET")
 	r.Handle("/adoption/{id}", getAdoptionHandler).Methods("GET")
+	r.Handle("/adoption/{id}", deleteAdoptionHandler).Methods("DELETE")
 
 	http.ListenAndServe(":3000", handlers.LoggingHandler(os.Stdout, r))
 

@@ -20,10 +20,10 @@ type Adoptee struct {
 }
 
 var adoptees []*Adoptee
+var adopteeSeq = intSeq()
 
 var createAdopteeHandler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 	adoptee := Adoptee{}
-	autoIncrement := len(adoptees)
 
 	err := r.ParseForm()
 
@@ -33,7 +33,7 @@ var createAdopteeHandler = http.HandlerFunc(func(w http.ResponseWriter, r *http.
 		return
 	}
 
-	adoptee.ID = autoIncrement + 1
+	adoptee.ID = adopteeSeq()
 	adoptee.Name = r.Form.Get("name")
 	adoptee.Breed = r.Form.Get("breed")
 	adoptee.Gender = r.Form.Get("gender")
@@ -124,24 +124,3 @@ var deleteAdopteeHandler = http.HandlerFunc(func(w http.ResponseWriter, r *http.
 	}
 
 })
-
-// Helper Functions
-
-func getAdopteeByID(id int) (*Adoptee, int) {
-	var adoptee *Adoptee
-	var index int
-	for i, a := range adoptees {
-		if a.ID == id {
-			adoptee = a
-			index = i
-		}
-	}
-	return adoptee, index
-}
-
-func removeAdopteeByID(index int) {
-	var emptyAdoptee *Adoptee
-	adoptees[index] = adoptees[len(adoptees)-1]
-	adoptees[len(adoptees)-1] = emptyAdoptee
-	adoptees = adoptees[:len(adoptees)-1]
-}

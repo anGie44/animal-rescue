@@ -4,92 +4,57 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
-	"reflect"
 	"strconv"
-	"strings"
 
 	"github.com/gorilla/mux"
 )
 
 type Adopter struct {
-	ID             int             `json:"id"`
-	FirstName      string          `json:"first_name"`
-	LastName       string          `json:"last_name"`
-	Phone          string          `json:"phone"`
-	Email          string          `json:"email"`
-	Gender         string          `json:"gender"`
-	Birthdate      string          `json:"birthdate"`
-	Address        string          `json:"address"`
-	Country        string          `json:"country"`
-	State          string          `json:"state"`
-	City           string          `json:"city"`
-	ZipCode        string          `json:"zip_code"`
-	PetPreferences []PetPreference `json:"pet_preferences"`
+	ID             int    `json:"id"`
+	FirstName      string `json:"first_name"`
+	LastName       string `json:"last_name"`
+	Phone          string `json:"phone"`
+	Email          string `json:"email"`
+	Gender         string `json:"gender"`
+	Birthdate      string `json:"birthdate"`
+	Address        string `json:"address"`
+	Country        string `json:"country"`
+	State          string `json:"state"`
+	City           string `json:"city"`
+	ZipCode        string `json:"zip_code"`
+	PetPreferences string `json:"pet_preferences"`
+}
+
+func (a *Adopter) Preferences() []PetPreference {
+	var prefs []PetPreference
+	if len(a.PetPreferences) > 0 {
+		petPrefBytes := []byte(a.PetPreferences)
+		json.Unmarshal(petPrefBytes, &prefs)
+	}
+	return prefs
 }
 
 var adopters []*Adopter
+var adopterSeq = intSeq()
+var petPrefSeq = intSeq()
 
 var createAdopterHandler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-	adopter := Adopter{}
-	adopterPetPreferences := []PetPreference{}
-	adopterAutoIncrement := len(adopters) + 1
-	petPrefAutoIncrement := len(petPrefs) + 1
-
-	err := r.ParseForm()
-
+	decoder := json.NewDecoder(r.Body)
+	var adopter Adopter
+	err := decoder.Decode(&adopter)
 	if err != nil {
 		fmt.Println(fmt.Errorf("Error: %v", err))
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
-
-	adopter.ID = adopterAutoIncrement
-	adopter.FirstName = r.Form.Get("first_name")
-	adopter.LastName = r.Form.Get("last_name")
-	adopter.Phone = r.Form.Get("phone")
-	adopter.Email = r.Form.Get("email")
-	adopter.Gender = r.Form.Get("gender")
-	adopter.Birthdate = r.Form.Get("birthdate")
-	adopter.Address = r.Form.Get("address")
-	adopter.Country = r.Form.Get("country")
-	adopter.State = r.Form.Get("state")
-	adopter.City = r.Form.Get("city")
-	adopter.ZipCode = r.Form.Get("zipcode")
-	petPreferenceA := PetPreference{
-		petPrefAutoIncrement,
-		r.Form.Get("pet_preference_a_breed"),
-		r.Form.Get("pet_preference_a_age"),
-		r.Form.Get("pet_preference_a_gender"),
-	}
-	petPrefAutoIncrement++
-	petPreferenceB := PetPreference{
-		petPrefAutoIncrement,
-		r.Form.Get("pet_preference_b_breed"),
-		r.Form.Get("pet_preference_b_age"),
-		r.Form.Get("pet_preference_b_gender"),
-	}
-	petPrefAutoIncrement++
-	petPreferenceC := PetPreference{
-		petPrefAutoIncrement,
-		r.Form.Get("pet_preference_c_breed"),
-		r.Form.Get("pet_preference_c_age"),
-		r.Form.Get("pet_preference_c_gender"),
-	}
-	petPrefAutoIncrement++
-	adopterPetPreferences = append(adopterPetPreferences, petPreferenceA)
-	adopterPetPreferences = append(adopterPetPreferences, petPreferenceB)
-	adopterPetPreferences = append(adopterPetPreferences, petPreferenceC)
-	adopter.PetPreferences = adopterPetPreferences
-	for _, pref := range adopterPetPreferences {
-		petPrefs = append(petPrefs, &pref)
-	}
-
+	adopter.ID = adopterSeq()
 	adopters = append(adopters, &adopter)
+	for _, pref := range adopter.Preferences() {
+		petPreferences = append(petPreferences, &pref)
+	}
 
-	// redirect user to original HTML page
-	// http.Redirect(w, r, "/", http.StatusFound)
-	payload, _ := json.Marshal(adopters)
-	w.Write([]byte(payload))
+	w.WriteHeader(http.StatusCreated)
+	json.NewEncoder(w).Encode(adopter)
 
 })
 
@@ -102,25 +67,14 @@ var getAdopterHandler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Req
 		return
 	}
 
-	w.Header().Set("Content-Type", "application/json")
 	adopter, _ := getAdopterByID(id)
 	if adopter != nil {
-		payload, _ := json.Marshal(adopter)
-		w.Write([]byte(payload))
-	} else {
-		w.Write([]byte("Adopter Not Found"))
+		json.NewEncoder(w).Encode(adopter)
 	}
-
 })
 
 var getAdoptersHandler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-	adopterListBytes, err := json.Marshal(adopters)
-	if err != nil {
-		fmt.Println(fmt.Errorf("Error: %v", err))
-		w.WriteHeader(http.StatusInternalServerError)
-		return
-	}
-	w.Write(adopterListBytes)
+	json.NewEncoder(w).Encode(adopters)
 })
 
 var updateAdopterHandler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -132,23 +86,32 @@ var updateAdopterHandler = http.HandlerFunc(func(w http.ResponseWriter, r *http.
 		w.Write([]byte("Adopter ID not valid"))
 		return
 	}
-
-	w.Header().Set("Content-Type", "application/json")
-
 	adopter, _ := getAdopterByID(id)
-	if adopter != nil {
-		requestQuery := r.URL.Query()
-		for key := range requestQuery {
-			newKey := formatKey(key)
-			value := requestQuery.Get(key)
-			reflect.ValueOf(adopter).Elem().FieldByName(newKey).SetString(value)
-		}
-		payload, _ := json.Marshal(adopter)
-		w.Write([]byte(payload))
-	} else {
-		w.Write([]byte("Adopter Not Found"))
+
+	if adopter == nil {
+		w.Write([]byte(fmt.Sprintf("Adopter with ID %s not found", id)))
+		return
 	}
 
+	decoder := json.NewDecoder(r.Body)
+	var updatedAdopter Adopter
+	err = decoder.Decode(&updatedAdopter)
+
+	if err == nil {
+		adopter.FirstName = updatedAdopter.FirstName
+		adopter.LastName = updatedAdopter.LastName
+		adopter.Phone = updatedAdopter.Phone
+		adopter.Email = updatedAdopter.Email
+		adopter.Gender = updatedAdopter.Gender
+		adopter.Birthdate = updatedAdopter.Birthdate
+		adopter.Address = updatedAdopter.Address
+		adopter.Country = updatedAdopter.Country
+		adopter.State = updatedAdopter.State
+		adopter.City = updatedAdopter.City
+		adopter.ZipCode = updatedAdopter.ZipCode
+
+		json.NewEncoder(w).Encode(adopter)
+	}
 })
 
 var deleteAdopterHandler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -164,42 +127,9 @@ var deleteAdopterHandler = http.HandlerFunc(func(w http.ResponseWriter, r *http.
 	adopter, index := getAdopterByID(id)
 	if adopter != nil {
 		removeAdopterByID(index)
-		w.Write([]byte("Adopter with ID " + string(index) + " removed"))
+		fmt.Fprintf(w, "The adopter with ID %v has been deleted successfully", id)
 	} else {
-		w.Write([]byte("Adopter Not Found"))
+		fmt.Fprintf(w, "The adopter with ID %v was not found", id)
 	}
+
 })
-
-// Helper Functions
-
-func getAdopterByID(id int) (*Adopter, int) {
-	var adopter *Adopter
-	var index int
-	for i, a := range adopters {
-		if a.ID == id {
-			adopter = a
-			index = i
-		}
-	}
-	return adopter, index
-}
-
-func removeAdopterByID(index int) {
-	var emptyAdopter *Adopter
-	adopters[index] = adopters[len(adopters)-1]
-	adopters[len(adopters)-1] = emptyAdopter
-	adopters = adopters[:len(adopters)-1]
-}
-
-func formatKey(key string) string {
-	var str string
-	if strings.Contains(key, "_") {
-		str = strings.Replace(key, "_", " ", -1)
-		str = strings.Title(str)
-		str = strings.Replace(str, " ", "", -1)
-
-	} else {
-		str = strings.Title(key)
-	}
-	return str
-}
