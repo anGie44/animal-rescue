@@ -40,8 +40,8 @@ func main() {
 	r.HandleFunc("/adoptions", animalRescue.GetAdoptions).Methods("GET")
 	r.HandleFunc("/adoption/{id}", animalRescue.GetAdoption).Methods("GET")
 	r.HandleFunc("/adoption/{id}", animalRescue.DeleteAdoption).Methods("DELETE")
-
-	http.ListenAndServe(":3000", handlers.LoggingHandler(os.Stdout, r))
+	
+	http.ListenAndServe(":8080", handlers.LoggingHandler(os.Stdout, r))
 
 }
 
