@@ -1,8 +1,11 @@
 package main
 
 import (
+	"fmt"
+	"html"
 	"net/http"
 	"os"
+	"strconv"
 
 	"github.com/gorilla/handlers"
 	"github.com/gorilla/mux"
@@ -40,7 +43,10 @@ func main() {
 	r.HandleFunc("/adoptions", animalRescue.GetAdoptions).Methods("GET")
 	r.HandleFunc("/adoption/{id}", animalRescue.GetAdoption).Methods("GET")
 	r.HandleFunc("/adoption/{id}", animalRescue.DeleteAdoption).Methods("DELETE")
-	
+
+	rocketEmoji := html.UnescapeString("&#" + strconv.Itoa(128640) + ";")
+
+	fmt.Printf("Server running on port 8080 %s\n", rocketEmoji)
 	http.ListenAndServe(":8080", handlers.LoggingHandler(os.Stdout, r))
 
 }
