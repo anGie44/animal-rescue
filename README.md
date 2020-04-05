@@ -2,14 +2,13 @@
 
 To run the server on your system:
 
-1. Run `go build -o main` to create the binary (`main`)
-2. Run the binary : `./main`
+1. Run `make` to get dependencies and create the binary (`workdir/animal-rescue`)
+2. Run `make run` to start the server
 
 To run the server in a Docker container:
 
-1. Run `docker build -t animal-rescue .`
-2. Run `docker run -p $PORT:8080 animal-rescue`. Where `$PORT` is your host's port.  
+1. Run `make docker-build`
 
 To run tests:
 
-1. Run `go test ./...`
+1. Run `make test`
