@@ -34,7 +34,7 @@ jobs: # basic units of work in a run
 
       - run:
           name: Start service
-          command: ./animal-rescue
+          command: ./workdir/animal-rescue
           background: true # keep service running and proceed to next step
 
       - run:
