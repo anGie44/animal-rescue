@@ -8,35 +8,38 @@ import (
 	"github.com/gorilla/mux"
 )
 
+var animalRescue *AnimalRescue
+
 func main() {
+	animalRescue = new(AnimalRescue)
+	animalRescue.init()
 	r := mux.NewRouter()
 	r.Handle("/", http.FileServer(http.Dir("./views/")))
-	r.PathPrefix("/static/").Handler(http.StripPrefix("/static/", http.FileServer(http.Dir("./static/"))))
 
-	// Defining the API
+	// Defining the API Routes
 	r.Handle("/status", statusHandler).Methods("GET")
 
-	r.Handle("/adopter", createAdopterHandler).Methods("POST")
-	r.Handle("/adopters", getAdoptersHandler).Methods("GET")
-	r.Handle("/adopter/{id}", getAdopterHandler).Methods("GET")
-	r.Handle("/adopter/{id}", updateAdopterHandler).Methods("PATCH")
-	r.Handle("/adopter/{id}", deleteAdopterHandler).Methods("DELETE")
+	r.HandleFunc("/adopter", animalRescue.CreateAdopter).Methods("POST")
+	r.HandleFunc("/adopters", animalRescue.GetAdopters).Methods("GET")
+	r.HandleFunc("/adopter/{id}", animalRescue.GetAdopter).Methods("GET")
+	r.HandleFunc("/adopter/{id}", animalRescue.UpdateAdopter).Methods("PATCH")
+	r.HandleFunc("/adopter/{id}", animalRescue.DeleteAdopter).Methods("DELETE")
 
-	r.Handle("/adoptee", createAdopteeHandler).Methods("POST")
-	r.Handle("/adoptees", getAdopteesHandler).Methods("GET")
-	r.Handle("/adoptee/{id}", getAdopteeHandler).Methods("GET")
-	r.Handle("/adoptee/{id}/update", updateAdopteeHandler).Methods("PATCH")
-	r.Handle("/adoptees/{id}/delete", deleteAdopteeHandler).Methods("DELETE")
+	r.HandleFunc("/adoptee", animalRescue.CreateAdoptee).Methods("POST")
+	r.HandleFunc("/adoptees", animalRescue.GetAdoptees).Methods("GET")
+	r.HandleFunc("/adoptee/{id}", animalRescue.GetAdoptee).Methods("GET")
+	r.HandleFunc("/adoptee/{id}", animalRescue.UpdateAdoptee).Methods("PATCH")
+	r.HandleFunc("/adoptees/{id}", animalRescue.DeleteAdoptee).Methods("DELETE")
 
-	r.Handle("/petpref", createPetPreferenceHandler).Methods("POST")
-	r.Handle("/petprefs", getPetPreferencesHandler).Methods("GET")
-	r.Handle("/petpref/{id}/update", updatePetPrefenceHandler).Methods("PATCH")
-	r.Handle("/petpref/{id}", deletePetPreferenceHandler).Methods("DELETE")
+	r.HandleFunc("/petpref", animalRescue.CreatePetPreference).Methods("POST")
+	r.HandleFunc("/petprefs", animalRescue.GetPetPreferences).Methods("GET")
+	r.HandleFunc("/petpref/{id}", animalRescue.UpdatePetPreference).Methods("PATCH")
+	r.HandleFunc("/petpref/{id}", animalRescue.DeletePetPreference).Methods("DELETE")
 
-	r.Handle("/adoption", createAdoptionHandler).Methods("POST")
-	r.Handle("/adoptions", getAdoptionsHandler).Methods("GET")
-	r.Handle("/adoption/{id}", getAdoptionHandler).Methods("GET")
-	r.Handle("/adoption/{id}", deleteAdoptionHandler).Methods("DELETE")
+	r.HandleFunc("/adoption", animalRescue.CreateAdoption).Methods("POST")
+	r.HandleFunc("/adoptions", animalRescue.GetAdoptions).Methods("GET")
+	r.HandleFunc("/adoption/{id}", animalRescue.GetAdoption).Methods("GET")
+	r.HandleFunc("/adoption/{id}", animalRescue.DeleteAdoption).Methods("DELETE")
 
 	http.ListenAndServe(":3000", handlers.LoggingHandler(os.Stdout, r))
 
