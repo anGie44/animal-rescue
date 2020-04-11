@@ -28,7 +28,7 @@ func (ar *AnimalRescue) CreateAdoptee(w http.ResponseWriter, r *http.Request) {
 	}
 
 	adoptee.ID = ar.AdopteeSeq()
-	ar.Adoptees = append(ar.Adoptees, adoptee)
+	ar.Adoptees[adoptee.ID] = adoptee
 	w.WriteHeader(http.StatusCreated)
 	json.NewEncoder(w).Encode(adoptee)
 
@@ -45,7 +45,7 @@ func (ar *AnimalRescue) GetAdoptee(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Set("Content-Type", "application/json")
 
-	adoptee, _ := ar.GetAdopteeByID(id)
+	adoptee := ar.Adoptees[id]
 	if adoptee != nil {
 		payload, _ := json.Marshal(adoptee)
 		w.Write([]byte(payload))
@@ -56,7 +56,11 @@ func (ar *AnimalRescue) GetAdoptee(w http.ResponseWriter, r *http.Request) {
 }
 
 func (ar *AnimalRescue) GetAdoptees(w http.ResponseWriter, r *http.Request) {
-	json.NewEncoder(w).Encode(ar.Adoptees)
+	adoptees := make([]*Adoptee, 0, len(ar.Adoptees))
+	for _, adoptee := range ar.Adoptees {
+		adoptees = append(adoptees, adoptee)
+	}
+	json.NewEncoder(w).Encode(adoptees)
 }
 
 func (ar *AnimalRescue) UpdateAdoptee(w http.ResponseWriter, r *http.Request) {
@@ -68,7 +72,7 @@ func (ar *AnimalRescue) UpdateAdoptee(w http.ResponseWriter, r *http.Request) {
 		w.Write([]byte("Adoptee ID not valid"))
 		return
 	}
-	adoptee, _ := ar.GetAdopteeByID(id)
+	adoptee := ar.Adoptees[id]
 
 	if adoptee == nil {
 		w.Write([]byte(fmt.Sprintf("Adoptee with ID %d not found", id)))
@@ -97,9 +101,9 @@ func (ar *AnimalRescue) DeleteAdoptee(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	adoptee, index := ar.GetAdopteeByID(id)
+	adoptee := ar.Adoptees[id]
 	if adoptee != nil {
-		ar.RemoveAdopteeByID(index)
+		delete(ar.Adoptees, id)
 		fmt.Fprintf(w, "The adoptee with ID %v has been deleted successfully", id)
 	} else {
 		fmt.Fprintf(w, "The adoptee with ID %v was not found", id)

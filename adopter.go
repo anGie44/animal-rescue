@@ -45,12 +45,13 @@ func (ar *AnimalRescue) CreateAdopter(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
+
 	adopter.ID = ar.AdopterSeq()
-	ar.Adopters = append(ar.Adopters, adopter)
+	ar.Adopters[adopter.ID] = adopter
 
 	for _, pref := range adopter.Preferences() {
-		ar.PetPreferences = append(ar.PetPreferences, pref)
-
+		pref.ID = ar.PetPreferenceSeq()
+		ar.PetPreferences[pref.ID] = pref
 	}
 
 	w.WriteHeader(http.StatusCreated)
@@ -61,33 +62,35 @@ func (ar *AnimalRescue) CreateAdopter(w http.ResponseWriter, r *http.Request) {
 func (ar *AnimalRescue) GetAdopter(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	id, err := strconv.Atoi(vars["id"])
-
 	if err != nil {
 		w.Write([]byte("Adopter ID not valid"))
 		return
 	}
 
-	adopter, _ := ar.GetAdopterByID(id)
+	adopter := ar.Adopters[id]
 	if adopter != nil {
 		json.NewEncoder(w).Encode(adopter)
 	}
 }
 
 func (ar *AnimalRescue) GetAdopters(w http.ResponseWriter, r *http.Request) {
-	json.NewEncoder(w).Encode(ar.Adopters)
+	adopters := make([]*Adopter, 0, len(ar.Adopters))
+	for _, adopter := range ar.Adopters {
+		adopters = append(adopters, adopter)
+	}
+	json.NewEncoder(w).Encode(adopters)
 }
 
 func (ar *AnimalRescue) UpdateAdopter(w http.ResponseWriter, r *http.Request) {
 	// GET adopter and update fields
 	vars := mux.Vars(r)
 	id, err := strconv.Atoi(vars["id"])
-
 	if err != nil {
 		w.Write([]byte("Adopter ID not valid"))
 		return
 	}
-	adopter, _ := ar.GetAdopterByID(id)
 
+	adopter := ar.Adopters[id]
 	if adopter == nil {
 		w.Write([]byte(fmt.Sprintf("Adopter with ID %d not found", id)))
 		return
@@ -107,15 +110,14 @@ func (ar *AnimalRescue) DeleteAdopter(w http.ResponseWriter, r *http.Request) {
 	// GET adopter and remove from list stored in memory
 	vars := mux.Vars(r)
 	id, err := strconv.Atoi(vars["id"])
-
 	if err != nil {
 		w.Write([]byte("Adopter ID not valid"))
 		return
 	}
 
-	adopter, index := ar.GetAdopterByID(id)
+	adopter := ar.Adopters[id]
 	if adopter != nil {
-		ar.RemoveAdopterByID(index)
+		delete(ar.Adopters, id)
 		fmt.Fprintf(w, "The adopter with ID %v has been deleted successfully", id)
 	} else {
 		fmt.Fprintf(w, "The adopter with ID %v was not found", id)

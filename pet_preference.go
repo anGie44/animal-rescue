@@ -26,14 +26,18 @@ func (ar *AnimalRescue) CreatePetPreference(w http.ResponseWriter, r *http.Reque
 		return
 	}
 	petPreference.ID = ar.PetPreferenceSeq()
-	ar.PetPreferences = append(ar.PetPreferences, petPreference)
+	ar.PetPreferences[petPreference.ID] = petPreference
 
 	w.WriteHeader(http.StatusCreated)
 	json.NewEncoder(w).Encode(petPreference)
 }
 
 func (ar *AnimalRescue) GetPetPreferences(w http.ResponseWriter, r *http.Request) {
-	json.NewEncoder(w).Encode(ar.PetPreferences)
+	petPreferences := make([]*PetPreference, 0, len(ar.PetPreferences))
+	for _, pref := range ar.PetPreferences {
+		petPreferences = append(petPreferences, pref)
+	}
+	json.NewEncoder(w).Encode(petPreferences)
 }
 
 func (ar *AnimalRescue) UpdatePetPreference(w http.ResponseWriter, r *http.Request) {
@@ -45,7 +49,7 @@ func (ar *AnimalRescue) UpdatePetPreference(w http.ResponseWriter, r *http.Reque
 		w.Write([]byte("Pet Preference ID not valid"))
 		return
 	}
-	petPreference, _ := ar.GetPetPreferenceByID(id)
+	petPreference := ar.PetPreferences[id]
 
 	if petPreference == nil {
 		w.Write([]byte(fmt.Sprintf("Pet Preference with ID %d not found", id)))
@@ -73,9 +77,9 @@ func (ar *AnimalRescue) DeletePetPreference(w http.ResponseWriter, r *http.Reque
 		return
 	}
 
-	petPreference, index := ar.GetPetPreferenceByID(id)
+	petPreference := ar.PetPreferences[id]
 	if petPreference != nil {
-		ar.RemovePetPreferenceByID(index)
+		delete(ar.PetPreferences, id)
 		fmt.Fprintf(w, "The pet_preference with ID %v has been deleted successfully", id)
 	} else {
 		fmt.Fprintf(w, "The pet_preference with ID %v was not found", id)

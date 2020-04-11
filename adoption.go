@@ -26,7 +26,7 @@ func (ar *AnimalRescue) CreateAdoption(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	adoption.ID = ar.AdoptionSeq()
-	ar.Adoptions = append(ar.Adoptions, adoption)
+	ar.Adoptions[adoption.ID] = adoption
 
 	w.WriteHeader(http.StatusCreated)
 	json.NewEncoder(w).Encode(adoption)
@@ -42,14 +42,18 @@ func (ar *AnimalRescue) GetAdoption(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	adoption, _ := ar.GetAdoptionByID(id)
+	adoption := ar.Adoptions[id]
 	if adoption != nil {
 		json.NewEncoder(w).Encode(adoption)
 	}
 }
 
 func (ar *AnimalRescue) GetAdoptions(w http.ResponseWriter, r *http.Request) {
-	json.NewEncoder(w).Encode(ar.Adoptions)
+	adoptions := make([]*Adoption, 0, len(ar.Adoptions))
+	for _, adoption := range ar.Adoptions {
+		adoptions = append(adoptions, adoption)
+	}
+	json.NewEncoder(w).Encode(adoptions)
 }
 
 func (ar *AnimalRescue) DeleteAdoption(w http.ResponseWriter, r *http.Request) {
@@ -62,9 +66,9 @@ func (ar *AnimalRescue) DeleteAdoption(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	adoption, index := ar.GetAdoptionByID(id)
+	adoption := ar.Adoptions[id]
 	if adoption != nil {
-		ar.RemoveAdoptionByID(index)
+		delete(ar.Adoptions, id)
 		fmt.Fprintf(w, "The adoption with ID %v has been deleted successfully", id)
 	} else {
 		fmt.Fprintf(w, "The adoption with ID %v was not found", id)
