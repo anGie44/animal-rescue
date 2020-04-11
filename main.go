@@ -14,6 +14,10 @@ import (
 var animalRescue *AnimalRescue
 
 func main() {
+	port := os.Getenv("PORT")
+	if port == "" {
+		port = "8000"
+	}
 	animalRescue = new(AnimalRescue)
 	animalRescue.init()
 	r := mux.NewRouter()
@@ -45,9 +49,8 @@ func main() {
 	r.HandleFunc("/petpref/{id}", animalRescue.DeletePetPreference).Methods("DELETE")
 
 	rocketEmoji := html.UnescapeString("&#" + strconv.Itoa(128640) + ";")
-
-	fmt.Printf("Server running on port 8080 %s\n", rocketEmoji)
-	http.ListenAndServe(":8080", handlers.LoggingHandler(os.Stdout, r))
+	fmt.Printf("Server running on port %s %s\n", port, rocketEmoji)
+	http.ListenAndServe(":"+port, handlers.LoggingHandler(os.Stdout, r))
 
 }
 
