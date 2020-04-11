@@ -9,6 +9,7 @@ jobs: # basic units of work in a run
 
     environment: # environment variables for the build itself
       TEST_RESULTS: /tmp/test-results # path to where test results will be saved
+      PORT: 8000
 
     steps: # steps that comprise the `build` job
       - checkout # check out source code to working directory
@@ -41,7 +42,7 @@ jobs: # basic units of work in a run
           name: Validate service is working
           command: |
             sleep 5
-            curl --retry 10 --retry-delay 1 -X POST --header "Content-Type: application/json" -d '{"email":"test@example.com","first_name":"Test","last_name":"User"}' http://localhost:8080/adopters
+            curl --retry 10 --retry-delay 1 -X POST --header "Content-Type: application/json" -d '{"email":"test@example.com","first_name":"Test","last_name":"User"}' http://localhost:$PORT/adopters
       - store_artifacts: # upload test summary for display in Artifacts
           path: /tmp/test-results
           destination: raw-test-output
